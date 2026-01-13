@@ -10,7 +10,6 @@ use std::path::PathBuf;
 use std::process;
 
 pub fn process_file(path: &PathBuf) {
-    println!("\nHaha, not implemented yet!\nEnjoy the carnage that is to follow!");
     dbg!(path);
     let file_as_string = fs::read_to_string(path);
     let stringified = match file_as_string {
@@ -23,18 +22,29 @@ pub fn process_file(path: &PathBuf) {
     };
 
     // I'm being naughty here. Watch me use .unwrap() in production code.
-    let rx_any_toplevel = Regex::new("^# ").unwrap();
     let rx_date = Regex::new(r"^# +[0-9]{4}/[0-9]{2}/[0-9]{2}").unwrap();
     let rx_job = Regex::new(r"^# +#[a-zA-Z]{3}[0-9]{3} *.*$").unwrap();
     let rx_task = Regex::new(r"^## [a-zA-Z /]*").unwrap();
     let rx_time = Regex::new(r"^### ").unwrap(); // could be more sophisticated, but idrc
 
+    let mut trimmed_file: Vec<&str> = Vec::new();
+
     for header in stringified.lines() {
-        if rx_time.is_match(header) {
-            println!("{header}");
-            println!("");
+        if (rx_date).is_match(header)
+            || (rx_job).is_match(header)
+            || (rx_task).is_match(header)
+            || (rx_time).is_match(header)
+        {
+            let line = header;
+            trimmed_file.push(line);
         }
     }
+
+    dbg!(trimmed_file);
+
+    // Now do the magic sorting into data structures.
+    // Optionally check if "date" and similar are what you think they are with regex, print
+    // warnings if this is not the case.
 
     // let date = get_date(&stringified);
     // add struct stuff, figure out how to store time data.
@@ -50,10 +60,3 @@ pub fn process_file(path: &PathBuf) {
 
     // println!("Date: {}", date);
 }
-
-// fn get_date(file: &String) -> &String {
-//     // shouldn't this be &str? Review string types I guess.
-//     todo!();
-//     // Make sure to check that the top line is in "# yyyy/mm/dd" format. If not, throw a warning or
-//     // smthn
-// }
