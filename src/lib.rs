@@ -9,6 +9,13 @@ use std::fs;
 use std::path::PathBuf;
 use std::process;
 
+struct JobEntry<'a> {
+    // job_date: &'a str,
+    job_card: &'a str,
+    job_tasks: Vec<&'a str>,
+    job_times: Vec<&'a str>,
+}
+
 pub fn process_file(path: &PathBuf) {
     dbg!(path);
     let file_as_string = fs::read_to_string(path);
@@ -29,6 +36,9 @@ pub fn process_file(path: &PathBuf) {
 
     let mut trimmed_file: Vec<&str> = Vec::new();
 
+    // Realistically I could have done this with just "^#". But anyway. Change this later once I've
+    // been a good boy and written tests (which I will do right?)
+    // ...right?
     for header in stringified.lines() {
         if (rx_date).is_match(header)
             || (rx_job).is_match(header)
@@ -46,17 +56,30 @@ pub fn process_file(path: &PathBuf) {
     // Optionally check if "date" and similar are what you think they are with regex, print
     // warnings if this is not the case.
 
-    // let date = get_date(&stringified);
-    // add struct stuff, figure out how to store time data.
-    // Job
-    // |   \
-    // |    \
-    // |     \
-    // |      \
-    // |       \
-    // Type_vec  hours_vec
+    // Desired logic:
+    // - Iterate through file
+    //   - Store date
+    // - continue iteration
+    // - find first/next job card. Save to new data structure (Vec?)
+    // - iterate, adding all instances of *task* or *time* to the data structure --until-- a new job card is found.
+    //          - yes, I know there are ways of bricking this. shut up.
+    // - Stop adding entries to data structure. Make new instace of data structure and repeat above
+    // lines.
+    // - Continue until reach end of file.
     //
-    // or type1/hours1 vec, etc. Or structs etc.
-
-    // println!("Date: {}", date);
+    //
+    //
+    //
+    //
+    // - Result: several data structures, holding:
+    //      - (opt) date
+    //      - job card
+    //      - array/vec/tuple/something of all the job tasks
+    //      - array/vec/tuple/something of all the job times
+    //
+    // - Convert times &str instances into a float.
+    //
+    // - Print all data to a nice colourful window with tables and whatnot.
+    //
+    // - Add a TODO to make a .CSV export flag. Or worse formats.
 }
