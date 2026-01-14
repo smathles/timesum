@@ -9,12 +9,64 @@ use std::fs;
 use std::path::PathBuf;
 use std::process;
 
+// struct JobEntry<'a> {
+//     // job_date: &'a str,
+//     job_card: Vec<&'a str>,
+//     job_tasks: Vec<&'a str>,
+//     job_times: Vec<&'a str>,
+// }
+
+// Wait should I have made a hashmap?
+
 struct JobEntry<'a> {
-    // job_date: &'a str,
-    job_card: &'a str,
-    job_tasks: Vec<&'a str>,
+    job_date: &'a str,
+    job_card: Vec<&'a str>,
+    job_tasks: Vec<(u8, &'a str)>, // index of job_card, job task
     job_times: Vec<&'a str>,
+    job_numerical_times: Vec<f32>, // Same as job_times, but converted text scrawl to floating
+                                   // point hours
 }
+
+impl<'a> JobEntry<'a> {
+    fn populate_strings(&self, input_file: Vec<&'a str>) {
+        // take input file or trimmed file, populate a JobEntry instance.
+        todo!();
+    }
+
+    fn calculate_times(&self) {
+        // Really this could be part of one gigantic method. But oh well.
+        todo!();
+    }
+}
+
+//    # 2025/12/25
+//    # #ZAP2027
+//    ## General Admin
+//    ### 9:30-10:45; 3:00-3:13; 11:59-2:23
+//    ## R&D
+//    ### 14:00-14:05
+//    ## Job Admin
+//    ### 17:00-17:15
+//    # #TUR2017
+//    ## Engineering
+//    ### 14:00-1:00;
+//    ## Job Admin
+//    ### 17:15-17:17
+//    # #PAC1978
+//    ## General Admin
+//    ### 17:20-18:00
+//
+//
+//
+//    struct_inst {
+//        job_date => "# #ZAP2027";
+//        job_card => <"ZAP2027", "TUR2017", "PAC1978">;
+//        job_tasks => <(0, "General Admin"), (0, "R&D"), (0, "Job Admin"), (1, "Engineering"),
+//            (1, "Job Admin"), (2, "General Admin")>;
+//        job_times => <"12345", "23456", "34567", "0987", "17890", "398691">;
+//    }
+//
+//
 
 pub fn process_file(path: &PathBuf) {
     dbg!(path);
@@ -56,6 +108,11 @@ pub fn process_file(path: &PathBuf) {
     // Optionally check if "date" and similar are what you think they are with regex, print
     // warnings if this is not the case.
 
+    // BUG: The logic below "make new instance of data structure every loop" will not work.
+    //
+    // Solution: Store *all* of this in a big datastructure. Even if it's a bit gross. You can add
+    // the logic to tease the required info out later.
+    //
     // Desired logic:
     // - Iterate through file
     //   - Store date
