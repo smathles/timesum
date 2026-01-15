@@ -22,13 +22,6 @@ struct JobEntry<'a> {
 }
 
 impl<'a> JobEntry<'a> {
-    //    struct_inst {
-    //        job_date => "# #ZAP2027";
-    //        job_card => <"ZAP2027", "TUR2017", "PAC1978">;
-    //        job_tasks => <(0, "General Admin"), (0, "R&D"), (0, "Job Admin"), (1, "Engineering"),
-    //            (1, "Job Admin"), (2, "General Admin")>;
-    //        job_times => <"12345", "23456", "34567", "0987", "17890", "398691">;
-    //    }
     fn populate_strings(&mut self, input_file: Vec<&'a str>) {
         // take input file or trimmed file, populate a JobEntry instance.
         //
@@ -63,6 +56,7 @@ impl<'a> JobEntry<'a> {
 
     fn calculate_times(&self) {
         // Really this could be part of one gigantic method. But oh well.
+        // - Convert times &str instances into a float.
         todo!();
     }
 
@@ -77,6 +71,7 @@ impl<'a> JobEntry<'a> {
     }
 }
 
+{
 //    # 2025/12/25
 //    # #ZAP2027
 //    ## General Admin
@@ -94,6 +89,7 @@ impl<'a> JobEntry<'a> {
 //    ## General Admin
 //    ### 17:20-18:00
 //
+}
 
 pub fn process_file(path: &PathBuf) {
     dbg!(path);
@@ -107,15 +103,17 @@ pub fn process_file(path: &PathBuf) {
         }
     };
 
-    let mut trimmed_file: Vec<&str> = Vec::new();
+    let mut vectorised_file: Vec<&str> = Vec::new();
 
     for header in stringified.lines() {
         let line = header;
-        trimmed_file.push(line);
+        vectorised_file.push(line);
     }
 
-    dbg!(&trimmed_file);
+    dbg!(&vectorised_file);
 
+    // Everything below this line probably should be in main()... Hmm
+    // HACK: this should all be in main thanks.
     let mut day_times = JobEntry {
         job_date: "",
         job_card: Vec::new(),
@@ -125,15 +123,15 @@ pub fn process_file(path: &PathBuf) {
     };
 
     day_times.populate_strings(trimmed_file);
-
+    day_times.calculate_times();
     dbg!(day_times);
-
-    // Desired logic:
-    //
-    //
-    // - Convert times &str instances into a float.
-    //
-    // - Print all data to a nice colourful window with tables and whatnot.
-    //
-    // - Add a TODO to make a .CSV export flag. Or worse formats.
+    day_times.print_formatted();
 }
+
+//    struct_inst {
+//        job_date => "# #ZAP2027";
+//        job_card => <"ZAP2027", "TUR2017", "PAC1978">;
+//        job_tasks => <(0, "General Admin"), (0, "R&D"), (0, "Job Admin"), (1, "Engineering"),
+//            (1, "Job Admin"), (2, "General Admin")>;
+//        job_times => <"12345", "23456", "34567", "0987", "17890", "398691">;
+//    }
