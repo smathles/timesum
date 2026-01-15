@@ -9,32 +9,70 @@ use std::fs;
 use std::path::PathBuf;
 use std::process;
 
-// struct JobEntry<'a> {
-//     // job_date: &'a str,
-//     job_card: Vec<&'a str>,
-//     job_tasks: Vec<&'a str>,
-//     job_times: Vec<&'a str>,
-// }
-
 // Wait should I have made a hashmap?
 
+#[derive(Debug)]
 struct JobEntry<'a> {
     job_date: &'a str,
     job_card: Vec<&'a str>,
-    job_tasks: Vec<(u8, &'a str)>, // index of job_card, job task
+    job_tasks: Vec<(i8, &'a str)>, // index of job_card, job task
     job_times: Vec<&'a str>,
     job_numerical_times: Vec<f32>, // Same as job_times, but converted text scrawl to floating
                                    // point hours
 }
 
 impl<'a> JobEntry<'a> {
-    fn populate_strings(&self, input_file: Vec<&'a str>) {
+    //    struct_inst {
+    //        job_date => "# #ZAP2027";
+    //        job_card => <"ZAP2027", "TUR2017", "PAC1978">;
+    //        job_tasks => <(0, "General Admin"), (0, "R&D"), (0, "Job Admin"), (1, "Engineering"),
+    //            (1, "Job Admin"), (2, "General Admin")>;
+    //        job_times => <"12345", "23456", "34567", "0987", "17890", "398691">;
+    //    }
+    fn populate_strings(&mut self, input_file: Vec<&'a str>) {
         // take input file or trimmed file, populate a JobEntry instance.
-        todo!();
+        //
+        // Now do the magic sorting into data structures.
+        // Optionally check if "date" and similar are what you think they are with regex, print
+        // warnings if this is not the case.
+
+        // I'm being naughty here. Watch me use .unwrap() in production code.
+        let rx_date = Regex::new(r"^# +[0-9]{4}/[0-9]{2}/[0-9]{2}").unwrap();
+        let rx_job = Regex::new(r"^# +#[a-zA-Z]{3}[0-9]{3} *.*$").unwrap();
+        let rx_task = Regex::new(r"^## [a-zA-Z /]*").unwrap();
+        let rx_time = Regex::new(r"^### ").unwrap(); // could be more sophisticated, but idrc
+
+        self.job_date = input_file[0];
+        // add error handling, check if this is not the first line or smthn.
+
+        let mut job_index: i8 = -1;
+
+        for line in input_file {
+            if rx_job.is_match(line) {
+                // error: This will not remove whitespace around the job card.  TODO: Fix this.
+                self.job_card.push(line);
+                job_index += 1;
+                continue;
+            } else if rx_task.is_match(line) {
+                self.job_tasks.push((job_index, line));
+            } else if rx_time.is_match(line) {
+                self.job_times.push(line);
+            }
+        }
     }
 
     fn calculate_times(&self) {
         // Really this could be part of one gigantic method. But oh well.
+        todo!();
+    }
+
+    fn print_formatted(&self) {
+        // hard lmao. Use funny colours and tables maybe
+        todo!();
+    }
+
+    fn export_csv(&self) {
+        // What it sounds like. Don't implement yet lol.
         todo!();
     }
 }
@@ -56,17 +94,6 @@ impl<'a> JobEntry<'a> {
 //    ## General Admin
 //    ### 17:20-18:00
 //
-//
-//
-//    struct_inst {
-//        job_date => "# #ZAP2027";
-//        job_card => <"ZAP2027", "TUR2017", "PAC1978">;
-//        job_tasks => <(0, "General Admin"), (0, "R&D"), (0, "Job Admin"), (1, "Engineering"),
-//            (1, "Job Admin"), (2, "General Admin")>;
-//        job_times => <"12345", "23456", "34567", "0987", "17890", "398691">;
-//    }
-//
-//
 
 pub fn process_file(path: &PathBuf) {
     dbg!(path);
@@ -80,59 +107,29 @@ pub fn process_file(path: &PathBuf) {
         }
     };
 
-    // I'm being naughty here. Watch me use .unwrap() in production code.
-    let rx_date = Regex::new(r"^# +[0-9]{4}/[0-9]{2}/[0-9]{2}").unwrap();
-    let rx_job = Regex::new(r"^# +#[a-zA-Z]{3}[0-9]{3} *.*$").unwrap();
-    let rx_task = Regex::new(r"^## [a-zA-Z /]*").unwrap();
-    let rx_time = Regex::new(r"^### ").unwrap(); // could be more sophisticated, but idrc
-
     let mut trimmed_file: Vec<&str> = Vec::new();
 
-    // Realistically I could have done this with just "^#". But anyway. Change this later once I've
-    // been a good boy and written tests (which I will do right?)
-    // ...right?
     for header in stringified.lines() {
-        if (rx_date).is_match(header)
-            || (rx_job).is_match(header)
-            || (rx_task).is_match(header)
-            || (rx_time).is_match(header)
-        {
-            let line = header;
-            trimmed_file.push(line);
-        }
+        let line = header;
+        trimmed_file.push(line);
     }
 
-    dbg!(trimmed_file);
+    dbg!(&trimmed_file);
 
-    // Now do the magic sorting into data structures.
-    // Optionally check if "date" and similar are what you think they are with regex, print
-    // warnings if this is not the case.
+    let mut day_times = JobEntry {
+        job_date: "",
+        job_card: Vec::new(),
+        job_tasks: Vec::new(), // index of job_card, job task
+        job_times: Vec::new(),
+        job_numerical_times: Vec::new(), // Same as job_times, but converted text scrawl to floating
+    };
 
-    // BUG: The logic below "make new instance of data structure every loop" will not work.
-    //
-    // Solution: Store *all* of this in a big datastructure. Even if it's a bit gross. You can add
-    // the logic to tease the required info out later.
-    //
+    day_times.populate_strings(trimmed_file);
+
+    dbg!(day_times);
+
     // Desired logic:
-    // - Iterate through file
-    //   - Store date
-    // - continue iteration
-    // - find first/next job card. Save to new data structure (Vec?)
-    // - iterate, adding all instances of *task* or *time* to the data structure --until-- a new job card is found.
-    //          - yes, I know there are ways of bricking this. shut up.
-    // - Stop adding entries to data structure. Make new instace of data structure and repeat above
-    // lines.
-    // - Continue until reach end of file.
     //
-    //
-    //
-    //
-    //
-    // - Result: several data structures, holding:
-    //      - (opt) date
-    //      - job card
-    //      - array/vec/tuple/something of all the job tasks
-    //      - array/vec/tuple/something of all the job times
     //
     // - Convert times &str instances into a float.
     //
