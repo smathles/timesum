@@ -15,7 +15,7 @@ use std::process;
 struct JobEntry<'a> {
     job_date: &'a str,
     job_card: Vec<&'a str>,
-    job_tasks: Vec<(i8, &'a str)>, // index of job_card, job task
+    job_tasks: Vec<(i32, &'a str)>, // index of job_card, job task
     job_times: Vec<&'a str>,
     job_numerical_times: Vec<f32>, // Same as job_times, but converted text scrawl to floating
                                    // point hours
@@ -38,7 +38,7 @@ impl<'a> JobEntry<'a> {
         self.job_date = input_file[0];
         // add error handling, check if this is not the first line or smthn.
 
-        let mut job_index: i8 = -1;
+        let mut job_index: i32 = -1;
 
         for line in input_file {
             if rx_job.is_match(line) {
@@ -57,7 +57,29 @@ impl<'a> JobEntry<'a> {
     fn calculate_times(&self) {
         // Really this could be part of one gigantic method. But oh well.
         // - Convert times &str instances into a float.
-        todo!();
+        let rx_time = Regex::new(r"^### ").unwrap(); // could be more sophisticated, but idrc
+        let time_block = Regex::new(r"([0-9]{1,2}:[0-9]{1,2}-[0-9]{1,2}:[0-9]{1,2})").unwrap();
+
+        let mut midway_vec: Vec<(i32, &str, i32)> = vec![]; // (line index, time_str, time_elapsed_int)
+        let mut line_index = 0;
+
+        // extract time instances
+        for line in &self.job_times {
+            for (_, [instance]) in time_block.captures_iter(line).map(|a| a.extract()) {
+                // Why the funny syntax above? Don't ask. It's a rabbit hole.
+                //
+                // Ok. I asked. The extract() thingy returns (entire_matched_regex, [separate, matched, regex, groups])
+                // We don't care about the entire regex being returned. Just the match (really the
+                // same thing in this case kinda).
+                midway_vec.push((line_index, instance, 0));
+            }
+            line_index += 1;
+        }
+
+        dbg!(midway_vec);
+
+        // Implement the rest lmao
+        todo!()
     }
 
     fn print_formatted(&self) {
@@ -71,7 +93,6 @@ impl<'a> JobEntry<'a> {
     }
 }
 
-{
 //    # 2025/12/25
 //    # #ZAP2027
 //    ## General Admin
@@ -89,7 +110,6 @@ impl<'a> JobEntry<'a> {
 //    ## General Admin
 //    ### 17:20-18:00
 //
-}
 
 pub fn process_file(path: &PathBuf) {
     dbg!(path);
@@ -113,7 +133,7 @@ pub fn process_file(path: &PathBuf) {
     dbg!(&vectorised_file);
 
     // Everything below this line probably should be in main()... Hmm
-    // HACK: this should all be in main thanks.
+    // TODO: this should all be in main thanks.
     let mut day_times = JobEntry {
         job_date: "",
         job_card: Vec::new(),
@@ -122,10 +142,10 @@ pub fn process_file(path: &PathBuf) {
         job_numerical_times: Vec::new(), // Same as job_times, but converted text scrawl to floating
     };
 
-    day_times.populate_strings(trimmed_file);
+    day_times.populate_strings(vectorised_file);
+    dbg!(&day_times);
     day_times.calculate_times();
-    dbg!(day_times);
-    day_times.print_formatted();
+    // day_times.print_formatted();
 }
 
 //    struct_inst {
