@@ -4,6 +4,7 @@
 // - print the output. Possibly in future add .csv/sheets pastable output, for now just print
 // to stdout.
 
+use chrono::{NaiveTime, TimeDelta};
 use regex::Regex;
 use std::fs;
 use std::path::PathBuf;
@@ -17,8 +18,8 @@ struct JobEntry<'a> {
     job_card: Vec<&'a str>,
     job_tasks: Vec<(i32, &'a str)>, // index of job_card, job task
     job_times: Vec<&'a str>,
-    job_numerical_times: Vec<f32>, // Same as job_times, but converted text scrawl to floating
-                                   // point hours
+    job_numerical_times: Vec<(i8, f32)>, // Same as job_times, but converted text scrawl to floating
+                                         // point hours
 }
 
 impl<'a> JobEntry<'a> {
@@ -54,14 +55,15 @@ impl<'a> JobEntry<'a> {
         }
     }
 
-    fn calculate_times(&self) {
+    fn calculate_times(&mut self) {
         // Really this could be part of one gigantic method. But oh well.
         // - Convert times &str instances into a float.
         let rx_time = Regex::new(r"^### ").unwrap(); // could be more sophisticated, but idrc
         let time_block = Regex::new(r"([0-9]{1,2}:[0-9]{1,2}-[0-9]{1,2}:[0-9]{1,2})").unwrap();
 
-        let mut midway_vec: Vec<(i32, &str, i32)> = vec![]; // (line index, time_str, time_elapsed_int)
+        let mut midway_vec: Vec<(i8, &str, f32)> = vec![]; // (line index, time_str, time_elapsed_int)
         let mut line_index = 0;
+        let mut dummy_num: f32 = 0.0;
 
         // extract time instances
         for line in &self.job_times {
@@ -71,15 +73,40 @@ impl<'a> JobEntry<'a> {
                 // Ok. I asked. The extract() thingy returns (entire_matched_regex, [separate, matched, regex, groups])
                 // We don't care about the entire regex being returned. Just the match (really the
                 // same thing in this case kinda).
-                midway_vec.push((line_index, instance, 0));
+                midway_vec.push((line_index, instance, dummy_num));
             }
             line_index += 1;
         }
 
-        dbg!(midway_vec);
+        dbg!(&midway_vec);
 
-        // Implement the rest lmao
-        todo!()
+        let mut time_pair: Vec<NaiveTime>;
+        let mut inter_str_pair: Vec<&str>;
+        let mut time_start: NaiveTime;
+        let mut time_end: NaiveTime;
+        let mut time_diff: TimeDelta;
+
+        for mut entry in midway_vec {
+            inter_str_pair = entry.1.split('-').collect();
+            // Surely don't use unwrap here without handling. Right? Right?????
+            time_start = NaiveTime::parse_from_str(inter_str_pair[0], "%H:%M").unwrap();
+            time_end = NaiveTime::parse_from_str(inter_str_pair[1], "%H:%M").unwrap();
+            time_diff = time_end - time_start;
+
+            if time_diff.num_minutes() <= 1 {
+                println!(
+                    "Warning! Time difference in job entry is negative! Consider using 24hr time please"
+                );
+            }
+
+            self.job_numerical_times.push((
+                entry.0,
+                // Cursed way of getting to 2 decimal place floats
+                (time_diff.num_minutes() as f32 * 100.0 / 60.0).round() / 100.0,
+            ));
+        }
+
+        dbg!(self);
     }
 
     fn print_formatted(&self) {
