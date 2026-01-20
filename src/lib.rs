@@ -106,6 +106,7 @@ impl<'a> JobEntry<'a> {
                 (time_diff.num_minutes() as f32 * 100.0 / 60.0).round() / 100.0,
             ));
         }
+        dbg!(self);
     }
 
     fn print_formatted(&self) {
@@ -172,11 +173,3 @@ pub fn process_file(path: &PathBuf) {
     day_times.calculate_times();
     // day_times.print_formatted();
 }
-
-//    struct_inst {
-//        job_date => "# #ZAP2027";
-//        job_card => <"ZAP2027", "TUR2017", "PAC1978">;
-//        job_tasks => <(0, "General Admin"), (0, "R&D"), (0, "Job Admin"), (1, "Engineering"),
-//            (1, "Job Admin"), (2, "General Admin")>;
-//        job_times => <"12345", "23456", "34567", "0987", "17890", "398691">;
-//    }

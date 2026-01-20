@@ -5,7 +5,7 @@
     - Should be "11 to 13".
     - Limit this to a 24 hour window. 11-1 will never mean 11am day one to 1am day {3,4,5,etc}.
 
-# #ZAP2027
+# #ZEG7027
 ## General Admin 
 ### 9:30-10:45; 3:00-3:13; 11:59-2:23
 - Above should interpret as "11:59AM to 2:23AM the next day". This is silly, and I need to start using 24 hour time.
@@ -17,7 +17,7 @@
 - should interpret as "5 minutes"
 - Pretend jet fuel melts steel beams
 
-# #TUR2017
+# #TEY2017
 ## Engineering
 ### 14:00-1:00; 
 - The above should interpret as "2PM to 1AM the next day"
