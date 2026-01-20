@@ -93,6 +93,7 @@ impl<'a> JobEntry<'a> {
             time_end = NaiveTime::parse_from_str(inter_str_pair[1], "%H:%M").unwrap();
             time_diff = time_end - time_start;
 
+            // TODO: Implement this behaviour in a nicer way please
             if time_diff.num_minutes() <= 1 {
                 println!(
                     "Warning! Time difference in job entry is negative! Consider using 24hr time please"
@@ -105,8 +106,6 @@ impl<'a> JobEntry<'a> {
                 (time_diff.num_minutes() as f32 * 100.0 / 60.0).round() / 100.0,
             ));
         }
-
-        dbg!(self);
     }
 
     fn print_formatted(&self) {
@@ -153,8 +152,7 @@ pub fn process_file(path: &PathBuf) {
     let mut vectorised_file: Vec<&str> = Vec::new();
 
     for header in stringified.lines() {
-        let line = header;
-        vectorised_file.push(line);
+        vectorised_file.push(header);
     }
 
     dbg!(&vectorised_file);
