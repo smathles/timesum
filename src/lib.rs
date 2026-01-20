@@ -120,24 +120,6 @@ impl<'a> JobEntry<'a> {
     }
 }
 
-//    # 2025/12/25
-//    # #ZAP2027
-//    ## General Admin
-//    ### 9:30-10:45; 3:00-3:13; 11:59-2:23
-//    ## R&D
-//    ### 14:00-14:05
-//    ## Job Admin
-//    ### 17:00-17:15
-//    # #TUR2017
-//    ## Engineering
-//    ### 14:00-1:00;
-//    ## Job Admin
-//    ### 17:15-17:17
-//    # #PAC1978
-//    ## General Admin
-//    ### 17:20-18:00
-//
-
 pub fn process_file(path: &PathBuf) {
     dbg!(path);
     let file_as_string = fs::read_to_string(path);
