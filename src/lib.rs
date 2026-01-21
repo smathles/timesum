@@ -16,10 +16,10 @@ use std::process;
 struct JobEntry<'a> {
     job_date: &'a str,
     job_card: Vec<&'a str>,
-    job_tasks: Vec<(i32, &'a str)>, // index of job_card, job task
+    job_tasks: Vec<(i8, &'a str)>, // index of job_card, job task
     job_times: Vec<&'a str>,
-    job_numerical_times: Vec<(i8, f32)>, // Same as job_times, but converted text scrawl to floating
-                                         // point hours
+    job_numerical_times: Vec<f32>, // Same as job_times, but converted text scrawl to floating
+                                   // point hours
 }
 
 impl<'a> JobEntry<'a> {
@@ -39,7 +39,7 @@ impl<'a> JobEntry<'a> {
         self.job_date = input_file[0];
         // add error handling, check if this is not the first line or smthn.
 
-        let mut job_index: i32 = -1;
+        let mut job_index: i8 = -1;
 
         for line in input_file {
             if rx_job.is_match(line) {
@@ -78,13 +78,14 @@ impl<'a> JobEntry<'a> {
             line_index += 1;
         }
 
-        dbg!(&midway_vec);
+        // dbg!(&midway_vec);
 
         let mut time_pair: Vec<NaiveTime>;
         let mut inter_str_pair: Vec<&str>;
         let mut time_start: NaiveTime;
         let mut time_end: NaiveTime;
         let mut time_diff: TimeDelta;
+        let mut times_vec: Vec<(i8, f32)> = vec![];
 
         for mut entry in midway_vec {
             inter_str_pair = entry.1.split('-').collect();
@@ -100,18 +101,51 @@ impl<'a> JobEntry<'a> {
                 );
             }
 
-            self.job_numerical_times.push((
+            times_vec.push((
                 entry.0,
                 // Cursed way of getting to 2 decimal place floats
                 (time_diff.num_minutes() as f32 * 100.0 / 60.0).round() / 100.0,
             ));
         }
-        dbg!(self);
+
+        // dbg!(&times_vec);
+
+        let mut times_vec_index: i8 = 0;
+        let mut intermediate_num: f32 = 0.0;
+
+        // Probably a cleaner way of doing this. Anyway.
+        for entry in times_vec {
+            if entry.0 == times_vec_index {
+                intermediate_num += entry.1;
+            } else {
+                self.job_numerical_times.push(intermediate_num);
+                intermediate_num = entry.1;
+                times_vec_index += 1;
+            }
+        }
+        self.job_numerical_times.push(intermediate_num);
+
+        dbg!(&self);
     }
 
     fn print_formatted(&self) {
         // hard lmao. Use funny colours and tables maybe
-        todo!();
+        let mut card_index: i8 = 0;
+        let mut times_index: usize = 0;
+
+        for job in &self.job_card {
+            for task in &self.job_tasks {
+                // yes
+                if task.0 == card_index {
+                    println!(
+                        "{}, {}, {}, {}",
+                        &self.job_date, &job, &task.1, &self.job_numerical_times[times_index]
+                    );
+                    times_index += 1;
+                }
+            }
+            card_index += 1;
+        }
     }
 
     fn export_csv(&self) {
@@ -121,7 +155,7 @@ impl<'a> JobEntry<'a> {
 }
 
 pub fn process_file(path: &PathBuf) {
-    dbg!(path);
+    // dbg!(path);
     let file_as_string = fs::read_to_string(path);
     let stringified = match file_as_string {
         Ok(file) => file,
@@ -138,7 +172,7 @@ pub fn process_file(path: &PathBuf) {
         vectorised_file.push(header);
     }
 
-    dbg!(&vectorised_file);
+    // dbg!(&vectorised_file);
 
     // Everything below this line probably should be in main()... Hmm
     // TODO: this should all be in main thanks.
@@ -151,7 +185,6 @@ pub fn process_file(path: &PathBuf) {
     };
 
     day_times.populate_strings(vectorised_file);
-    dbg!(&day_times);
     day_times.calculate_times();
-    // day_times.print_formatted();
+    day_times.print_formatted();
 }

@@ -75,5 +75,6 @@ fn main() {
     };
 
     // Process file
+    // Should break this up, but hey here we are.
     process_file(filepath);
 }
