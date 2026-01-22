@@ -1,16 +1,8 @@
-// - Read file to object/variable
-// - Extract blobs of jobs/tasks/times. Store in a vector/array/struct
-// - extract the times, process maths with them. Return them to a new/same vector/array/struct
-// - print the output. Possibly in future add .csv/sheets pastable output, for now just print
-// to stdout.
-
 use chrono::{NaiveTime, TimeDelta};
 use regex::Regex;
 use std::fs;
 use std::path::PathBuf;
 use std::process;
-
-// Wait should I have made a hashmap?
 
 #[derive(Debug)]
 struct JobEntry<'a> {
@@ -23,6 +15,15 @@ struct JobEntry<'a> {
 }
 
 impl<'a> JobEntry<'a> {
+    pub fn new() -> JobEntry<'a> {
+        JobEntry {
+            job_date: "",
+            job_card: Vec::new(),
+            job_tasks: Vec::new(), // index of job_card, job task
+            job_times: Vec::new(),
+            job_numerical_times: Vec::new(), // Same as job_times, but converted text scrawl to floating
+        }
+    }
     fn populate_strings(&mut self, input_file: Vec<&'a str>) {
         // take input file or trimmed file, populate a JobEntry instance.
         //
@@ -31,7 +32,7 @@ impl<'a> JobEntry<'a> {
         // warnings if this is not the case.
 
         // I'm being naughty here. Watch me use .unwrap() in production code.
-        let rx_date = Regex::new(r"^# +[0-9]{4}/[0-9]{2}/[0-9]{2}").unwrap();
+        // let rx_date = Regex::new(r"^# +[0-9]{4}/[0-9]{2}/[0-9]{2}").unwrap();
         let rx_job = Regex::new(r"^# +#[a-zA-Z]{3}[0-9]{3} *.*$").unwrap();
         let rx_task = Regex::new(r"^## [a-zA-Z /]*").unwrap();
         let rx_time = Regex::new(r"^### ").unwrap(); // could be more sophisticated, but idrc
@@ -58,12 +59,12 @@ impl<'a> JobEntry<'a> {
     fn calculate_times(&mut self) {
         // Really this could be part of one gigantic method. But oh well.
         // - Convert times &str instances into a float.
-        let rx_time = Regex::new(r"^### ").unwrap(); // could be more sophisticated, but idrc
+        // let rx_time = Regex::new(r"^### ").unwrap(); // could be more sophisticated, but idrc
         let time_block = Regex::new(r"([0-9]{1,2}:[0-9]{1,2}-[0-9]{1,2}:[0-9]{1,2})").unwrap();
 
         let mut midway_vec: Vec<(i8, &str, f32)> = vec![]; // (line index, time_str, time_elapsed_int)
         let mut line_index = 0;
-        let mut dummy_num: f32 = 0.0;
+        let dummy_num: f32 = 0.0;
 
         // extract time instances
         for line in &self.job_times {
@@ -80,14 +81,13 @@ impl<'a> JobEntry<'a> {
 
         // dbg!(&midway_vec);
 
-        let mut time_pair: Vec<NaiveTime>;
         let mut inter_str_pair: Vec<&str>;
         let mut time_start: NaiveTime;
         let mut time_end: NaiveTime;
         let mut time_diff: TimeDelta;
         let mut times_vec: Vec<(i8, f32)> = vec![];
 
-        for mut entry in midway_vec {
+        for entry in midway_vec {
             inter_str_pair = entry.1.split('-').collect();
             // Surely don't use unwrap here without handling. Right? Right?????
             time_start = NaiveTime::parse_from_str(inter_str_pair[0], "%H:%M").unwrap();
@@ -148,10 +148,10 @@ impl<'a> JobEntry<'a> {
         }
     }
 
-    fn export_csv(&self) {
-        // What it sounds like. Don't implement yet lol.
-        todo!();
-    }
+    // fn export_csv(&self) {
+    //     // What it sounds like. Don't implement yet lol.
+    //     todo!();
+    // }
 }
 
 pub fn process_file(path: &PathBuf) {
@@ -176,13 +176,7 @@ pub fn process_file(path: &PathBuf) {
 
     // Everything below this line probably should be in main()... Hmm
     // TODO: this should all be in main thanks.
-    let mut day_times = JobEntry {
-        job_date: "",
-        job_card: Vec::new(),
-        job_tasks: Vec::new(), // index of job_card, job task
-        job_times: Vec::new(),
-        job_numerical_times: Vec::new(), // Same as job_times, but converted text scrawl to floating
-    };
+    let mut day_times = JobEntry::new();
 
     day_times.populate_strings(vectorised_file);
     day_times.calculate_times();

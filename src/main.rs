@@ -45,7 +45,6 @@ fn main() {
     }
     // alternative to env::args::collect() with additional functionality.
     let args = Cli::parse();
-    // dbg!(&args);
 
     // Check filepath was provided.
     let filepath = match &args.path {
@@ -74,7 +73,6 @@ fn main() {
         }
     };
 
-    // Process file
-    // Should break this up, but hey here we are.
+    // Should break this function up, but hey here we are.
     process_file(filepath);
 }
