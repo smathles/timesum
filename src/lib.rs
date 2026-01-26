@@ -24,13 +24,9 @@ impl<'a> JobEntry<'a> {
             job_numerical_times: Vec::new(), // Same as job_times, but converted text scrawl to floating
         }
     }
-    fn populate_strings(&mut self, input_file: Vec<&'a str>) {
-        // take input file or trimmed file, populate a JobEntry instance.
-        //
-        // Now do the magic sorting into data structures.
-        // Optionally check if "date" and similar are what you think they are with regex, print
-        // warnings if this is not the case.
 
+    /// take input file or trimmed file, populate a JobEntry instance.
+    fn populate_strings(&mut self, input_file: Vec<&'a str>) {
         // I'm being naughty here. Watch me use .unwrap() in production code.
         // let rx_date = Regex::new(r"^# +[0-9]{4}/[0-9]{2}/[0-9]{2}").unwrap();
         let rx_job = Regex::new(r"^# +#[a-zA-Z]{3}[0-9]{3} *.*$").unwrap();
@@ -57,9 +53,6 @@ impl<'a> JobEntry<'a> {
     }
 
     fn calculate_times(&mut self) {
-        // Really this could be part of one gigantic method. But oh well.
-        // - Convert times &str instances into a float.
-        // let rx_time = Regex::new(r"^### ").unwrap(); // could be more sophisticated, but idrc
         let time_block = Regex::new(r"([0-9]{1,2}:[0-9]{1,2}-[0-9]{1,2}:[0-9]{1,2})").unwrap();
 
         let mut midway_vec: Vec<(i8, &str, f32)> = vec![]; // (line index, time_str, time_elapsed_int)
@@ -78,8 +71,6 @@ impl<'a> JobEntry<'a> {
             }
             line_index += 1;
         }
-
-        // dbg!(&midway_vec);
 
         let mut inter_str_pair: Vec<&str>;
         let mut time_start: NaiveTime;
@@ -108,8 +99,6 @@ impl<'a> JobEntry<'a> {
             ));
         }
 
-        // dbg!(&times_vec);
-
         let mut times_vec_index: i8 = 0;
         let mut intermediate_num: f32 = 0.0;
 
@@ -124,8 +113,6 @@ impl<'a> JobEntry<'a> {
             }
         }
         self.job_numerical_times.push(intermediate_num);
-
-        dbg!(&self);
     }
 
     fn print_formatted(&self) {
@@ -135,7 +122,6 @@ impl<'a> JobEntry<'a> {
 
         for job in &self.job_card {
             for task in &self.job_tasks {
-                // yes
                 if task.0 == card_index {
                     println!(
                         "{}, {}, {}, {}",
@@ -155,7 +141,6 @@ impl<'a> JobEntry<'a> {
 }
 
 pub fn process_file(path: &PathBuf) {
-    // dbg!(path);
     let file_as_string = fs::read_to_string(path);
     let stringified = match file_as_string {
         Ok(file) => file,
@@ -172,9 +157,6 @@ pub fn process_file(path: &PathBuf) {
         vectorised_file.push(header);
     }
 
-    // dbg!(&vectorised_file);
-
-    // Everything below this line probably should be in main()... Hmm
     // TODO: this should all be in main thanks.
     let mut day_times = JobEntry::new();
 
