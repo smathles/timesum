@@ -164,3 +164,14 @@ pub fn process_file(path: &PathBuf) {
     day_times.calculate_times();
     day_times.print_formatted();
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    // yes yay
+
+    #[test]
+    fn dummy() {
+        todo!();
+    }
+}
