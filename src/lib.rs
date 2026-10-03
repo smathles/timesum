@@ -28,6 +28,9 @@ impl<'a> JobEntry<'a> {
     /// take input file or trimmed file, populate a JobEntry instance.
     fn populate_strings(&mut self, input_file: Vec<&'a str>) {
         // I'm being naughty here. Watch me use .unwrap() in production code.
+        // Eh, it's ok in hindsight. This is for an input built into the binary, not something
+        // that's going to be dependent on runtime.
+        //
         // let rx_date = Regex::new(r"^# +[0-9]{4}/[0-9]{2}/[0-9]{2}").unwrap();
         let rx_job = Regex::new(r"^# +#[a-zA-Z]{3}[0-9]{3} *.*$").unwrap();
         let rx_task = Regex::new(r"^## [a-zA-Z /]*").unwrap();
